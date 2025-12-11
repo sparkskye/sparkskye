@@ -1,10 +1,12 @@
-
 :root{
   --bg:#151522; --text:#cde6f1;
   --blue:#00afff; --orange:#f0593a; --purple:#894bdd; --yellow:#fbbc42;
   --panel:#191925; --stroke:#26263a; --ink:#0d0d15;
   --font-shift: 2px;
-  --tabs-top: 48.5%; --label-top: 48.5%; --sub-top: 61%;
+  
+  /* UPDATED: Adjusted label-top to 43% to move rest text higher */
+  --tabs-top: 48.5%; --label-top: 48%; --sub-top: 61%;
+  
   scroll-behavior:smooth;
 }
 *{box-sizing:border-box}
@@ -15,25 +17,35 @@ a{color:inherit;text-decoration:none}
 .center{text-align:center}
 
 /* HERO banner (pixelated) */
-.hero{max-width:1180px;margin:18px auto 6px; border:1px solid var(--stroke);
+.hero{max-width:1180px; margin:18px auto 6px; border:1px solid var(--stroke); width:100%;
   image-rendering:pixelated; clip-path: polygon(10px 0,calc(100% - 10px) 0,100% 10px,100% calc(100% - 10px),calc(100% - 10px) 100%,10px 100%,0 calc(100% - 10px),0 10px); overflow:hidden;}
-.hero img{width:100%; height:auto; image-rendering:pixelated; image-rendering: -moz-crisp-edges; image-rendering: crisp-edges;}
+.hero img{width:100%; height:auto; display:block; image-rendering:pixelated; image-rendering: -moz-crisp-edges; image-rendering: crisp-edges;}
 
 /* ===== Main Island Nav ===== */
-.px-island-wrap{position:relative;display:grid;place-items:center;height:320px;margin-top:0}
-.px-island{width:min(96vw, 920px); min-width:380px; aspect-ratio:3.1/1; min-height:140px; display:block; image-rendering:pixelated; background:#151522;border:none}
-@media (max-width:420px){
-  .px-island{min-width:360px; min-height:150px; aspect-ratio:2.9/1;}
-}
+.px-island-wrap{position:relative; display:grid; place-items:center; min-height:160px; padding:40px 0; margin-top:0;}
+.px-island{width:min(96vw, 920px); min-width:380px; aspect-ratio:3.1/1; min-height:140px; display:block; image-rendering:pixelated; background:#151522; border:none}
+
 .overlay{position:absolute;pointer-events:none}
-.rest-label{position:absolute;left:50%;top:var(--label-top);transform:translate(-50%,calc(-50% + var(--font-shift)));font-weight:900}
+
+/* Updated Rest Label: uses variable for easier adjustment */
+.rest-label{
+  position:absolute;
+  left:50%;
+  top:var(--label-top); 
+  transform:translate(-50%,calc(-50% + var(--font-shift)));
+  font-weight:900;
+  width:100%;
+  text-align:center;
+  white-space:nowrap;
+}
+
 .tabs{position:absolute;left:50%;top:var(--tabs-top);transform:translate(-50%,calc(-50% + var(--font-shift)));display:flex;gap:26px;pointer-events:auto;opacity:0;transition:opacity .18s ease}
 .tab{background:transparent;color:var(--text);padding:6px 10px;cursor:pointer;user-select:none}
-.subs{position:absolute;left:50%;top:var(--sub-top);transform:translate(-50%,var(--font-shift));display:flex;gap:14px;opacity:0;transition:opacity .16s ease;pointer-events:auto}
-.sub{background:transparent;color:var(--ink);padding:8px 10px;font-weight:400;}
+.subs{position:absolute;left:50%;top:var(--sub-top);transform:translate(-50%,var(--font-shift));display:flex;gap:14px;opacity:0;transition:opacity .16s ease;pointer-events:auto; justify-content: center; width: 100%;}
+.sub{background:transparent;color:var(--ink);padding:8px 10px;font-weight:400; white-space:nowrap}
 
 /* static mini island + pfp */
-.pfp-island-wrap{position:relative;display:grid;place-items:center;height:220px;margin:6px 0 0}
+.pfp-island-wrap{position:relative; display:grid; place-items:center; min-height:140px; padding:20px 0; margin:6px 0 0;}
 .pfp-island{width:min(70vw, 520px); min-width:300px; aspect-ratio:3.2/1; min-height:110px; display:block; image-rendering:pixelated; background:#151522;border:none}
 .pfp-overlay{position:absolute;left:50%;top:50%;transform:translate(-50%, -44%); pointer-events:none; display:grid; place-items:center}
 .pfp-overlay img{width:68px;height:68px; image-rendering:pixelated}
@@ -50,3 +62,21 @@ a{color:inherit;text-decoration:none}
 /* About block */
 .about{max-width:860px;margin:4px auto 18px;text-align:center}
 .about p{line-height:1.7; white-space:pre-line; transform:translateY(var(--font-shift));}
+
+/* --- MOBILE OPTIMIZATIONS --- */
+@media (max-width: 600px) {
+  .px-island {
+    width: 100%;
+    min-width: 0;
+    aspect-ratio: 2.8/1;
+  }
+  .tabs { gap: 14px; }
+  .subs { gap: 6px; }
+  .tab { padding: 10px 6px; font-size: 14px; }
+  .sub { padding: 6px 4px; font-size: 13px; }
+  .about p { white-space: normal; padding: 0 16px; font-size: 15px; }
+  .container { padding: 10px 16px; }
+  .grid { gap: 12px; }
+  .px-island-wrap { min-height: 120px; padding: 20px 0; }
+  .hero { margin: 10px auto 4px; }
+}
