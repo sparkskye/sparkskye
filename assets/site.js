@@ -1,4 +1,3 @@
-
 (() => {
 function hexToRGB(hex){hex=String(hex||'').replace('#','').trim();if(hex.length===3){hex=hex.split('').map(c=>c+c).join('');}if(!hex) return {r:0,g:0,b:0};const n=parseInt(hex,16);return {r:(n>>16)&255,g:(n>>8)&255,b:n&255};}
 function lockOverlay(host, canvas, overlay){
@@ -48,7 +47,8 @@ function initIslandNav(host){
   let W=480, H=160, cssW=0, pixelSize=3;
   function setupGrid(){
     cssW = Math.min(host.clientWidth || 800, 920);
-    pixelSize = Math.max(2, Math.min(8, Math.round(cssW/195)));
+    const divisor = (cssW < 600) ? 160 : 195;
+    pixelSize = Math.max(2, Math.min(8, Math.round(cssW / divisor)));
     W = Math.max(400, Math.round(cssW / pixelSize));
     H = Math.max(140, Math.round(W / 3.1));
     canvas.width = W; canvas.height = H;
@@ -60,20 +60,24 @@ function initIslandNav(host){
   let current = {...targetColor};
 
   // state machine
-  let mode='rest';  // 'rest' | 'open'
+  let mode='rest'; 
   let collapseTimer=null;
   function toRest(){ mode='rest'; tabs.style.opacity='0'; subs.style.opacity='0'; rest.style.opacity='1'; target=0; targetColor = hexToRGB(COLORS.rest); }
   function toOpen(){ mode='open'; rest.style.opacity='0'; tabs.style.opacity='1'; }
 
-  // Home click anywhere on blue island that isn't a button
+  const isTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+
   host.addEventListener('click', (e)=>{
-    if(mode==='rest' && !e.target.closest('.tab, .sub')){
-      window.location.href='index.html';
+    if(e.target.closest('.tab, .sub')) return;
+    if(mode==='rest'){
+      if(isTouch){ toOpen(); } else { window.location.href='index.html'; }
+    } else {
+      toRest();
     }
   });
 
   host.addEventListener('mouseenter', ()=>{ if(collapseTimer) clearTimeout(collapseTimer); toOpen(); });
-  host.addEventListener('mouseleave', ()=>{ collapseTimer=setTimeout(()=>toRest(),140); });
+  host.addEventListener('mouseleave', ()=>{ const delay = isTouch ? 2000 : 140; collapseTimer=setTimeout(()=>toRest(), delay); });
   tabs.addEventListener('mouseenter', ()=>{ if(collapseTimer) clearTimeout(collapseTimer); toOpen(); });
   subs.addEventListener('mouseenter', ()=>{ if(collapseTimer) clearTimeout(collapseTimer); toOpen(); });
   tabs.addEventListener('mouseleave', ()=>{ collapseTimer=setTimeout(()=>{ if(!subs.matches(':hover')){ target=0; subs.style.opacity='0'; targetColor=hexToRGB(COLORS.rest); } },120); });
@@ -89,21 +93,33 @@ function initIslandNav(host){
   }
   tabs.querySelectorAll('.tab').forEach(el=>{
     el.addEventListener('mouseenter', ()=>{ setSection(el.dataset.key); subs.style.opacity='1'; target=1; });
+    el.addEventListener('click', (e)=>{ setSection(el.dataset.key); subs.style.opacity='1'; target=1; });
   });
 
   // geometry + drawing
   let pos=0, vel=0, target=0; const k=0.10, damping=0.16;
+  
   function sdf(px,py){
-    const PADX=W*0.12, PADY=H*0.16;
-    const baseW=W*0.74-PADX;
-    const baseH=H*0.30-PADY*0.1, openH=H*0.52-PADY*0.1; // compact open height
-    const w=baseW + (W*0.01)*pos;
-    const h=baseH+(openH-baseH)*pos;
-    const topFixed=(H*0.34);
-    const cy=topFixed+h/2;
-    const r=Math.min(w,h)*0.13;    // slightly squarer corners
-    const qx=Math.abs(px-W/2)-(w/2-r), qy=Math.abs(py-cy)-(h/2-r);
-    const dx=Math.max(qx,0), dy=Math.max(qy,0);
+    const isSmall = (cssW < 600);
+    const PADX = isSmall ? W * 0.04 : W * 0.12;
+    const PADY = H * 0.16;
+    
+    // Width logic
+    const baseW = W*0.74 - PADX;
+    const w = baseW + (W * (isSmall ? 0.15 : 0.01)) * pos;
+    
+    // Height logic
+    const baseH = H*0.30 - PADY*0.1;
+    const openH = H*0.52 - PADY*0.1; 
+    const h = baseH + (openH - baseH) * pos;
+
+    // CENTER FIX: Calculate topFixed so the "rest" shape (baseH) is exactly centered vertically
+    const topFixed = (H - baseH) / 2;
+
+    const cy = topFixed + h/2;
+    const r = Math.min(w,h)*0.13;
+    const qx = Math.abs(px-W/2)-(w/2-r), qy = Math.abs(py-cy)-(h/2-r);
+    const dx = Math.max(qx,0), dy = Math.max(qy,0);
     return Math.sqrt(dx*dx+dy*dy)+Math.min(Math.max(qx,qy),0)-r;
   }
 
